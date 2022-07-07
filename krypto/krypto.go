@@ -13,27 +13,28 @@ func checkerr(err error) {
 	}
 }
 
-// TODO: Make Private Key Private
-
 type KeyPair struct {
-	PublicKey  [32]byte
-	PrivateKey [32]byte
+	PublicKey  []byte
+	PrivateKey []byte
 }
 
 var NewKeyPair = KeyPair{}
 
-func (keyPair *KeyPair) createPrivateKey() {
-	rand.Read(NewKeyPair.PrivateKey[:])
+func createPrivateKey() []byte {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return b
 }
 
-func (keyPair *KeyPair) createPublicKey() {
-	// https://pkg.go.dev/golang.org/x/crypto/curve25519#X25519
-	y, err := curve25519.X25519(NewKeyPair.PrivateKey[:], curve25519.Basepoint)
-	copy(NewKeyPair.PublicKey[:], y)
+func createPublicKey(privateKey []byte) []byte {
+
+	y, err := curve25519.X25519(privateKey[:], curve25519.Basepoint)
 	checkerr(err)
+	return y
 }
 
 func KeyGen() {
-	NewKeyPair.createPrivateKey()
-	NewKeyPair.createPublicKey()
+
+	NewKeyPair.PrivateKey = createPrivateKey()
+	NewKeyPair.PublicKey = createPublicKey(NewKeyPair.PrivateKey)
 }

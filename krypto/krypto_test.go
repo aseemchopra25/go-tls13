@@ -1,31 +1,18 @@
+// t.Errorf("Error: %q", x)
 package krypto
 
 import (
-	"fmt"
+	"encoding/hex"
 	"testing"
 )
 
-// t.Errorf("Error: %q", x)
-func TestPrivateKey(t *testing.T) {
-	KeyGen()
-	fmt.Println(NewKeyPair.PrivateKey)
-	for _, v := range NewKeyPair.PrivateKey {
-		if v != 0 {
-			return
-		}
-	}
-	t.Errorf("Error: Empty Private Key")
-
-}
-
 func TestPublicKey(t *testing.T) {
-	fmt.Println(NewKeyPair.PublicKey)
-	KeyGen()
-	for _, v := range NewKeyPair.PublicKey {
-		if v != 0 {
-			return
-		}
+	testPubKey := "358072d6365880d1aeea329adf9121383851ed21a28e3b75e965d0d2cd166254"
+	testPrivateKey, _ := hex.DecodeString("202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f")
+
+	pub := hex.EncodeToString(createPublicKey(testPrivateKey))
+	if pub != testPubKey {
+		t.Errorf("Key Pair Generation Failure")
 	}
-	t.Errorf("Error: Empty Private Key")
 
 }
