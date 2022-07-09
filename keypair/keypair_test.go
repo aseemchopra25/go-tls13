@@ -1,5 +1,4 @@
-// t.Errorf("Error: %q", x)
-package krypto
+package keypair
 
 import (
 	"encoding/hex"

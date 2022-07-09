@@ -1,4 +1,4 @@
-package krypto
+package keypair
 
 import (
 	"crypto/rand"
@@ -33,7 +33,8 @@ func createPublicKey(privateKey []byte) []byte {
 	return y
 }
 
-func KeyGen() {
+func Generate() {
+	// entry point from main.go
 
 	NewKeyPair.PrivateKey = createPrivateKey()
 	NewKeyPair.PublicKey = createPublicKey(NewKeyPair.PrivateKey)
