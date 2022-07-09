@@ -18,7 +18,7 @@ import (
 
 func TestClientHello(t *testing.T) {
 	keypair.Generate()
-	Hello("test.com")
+	SendHello("test.com")
 	// test Record Header
 	fmt.Println("Record:", help.B2H(Ch.Rh))
 	fmt.Println("Handshake:", help.B2H(Ch.Hh))

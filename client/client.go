@@ -2,9 +2,12 @@ package client
 
 import (
 	"crypto/rand"
+	"fmt"
+	"log"
 
 	"github.com/aseemchopra25/go-toy-tls/help"
 	"github.com/aseemchopra25/go-toy-tls/keypair"
+	"github.com/aseemchopra25/go-toy-tls/network"
 )
 
 // 1. Client random
@@ -32,7 +35,7 @@ type ClientHello struct {
 
 var Ch ClientHello
 
-func Hello(name string) []byte {
+func CreateHello(name string) []byte {
 
 	// Handshake Header
 	Ch.Hh = []byte{0x01, 0x00}
@@ -95,4 +98,20 @@ func Hello(name string) []byte {
 
 	lol := help.Concat(Ch.Rh, Ch.Hh, Ch.Cv, Ch.Cr, Ch.Sid, Ch.Cs, Ch.Cm, Ch.El, Ch.Sn, Ch.Sg, Ch.Sa, Ch.Sv, Ch.Psk, Ch.Ks)
 	return lol
+}
+
+func SendHello(name string) {
+	// 3. Connect
+	msg := CreateHello(name)
+	// 3. Connect
+	network.Conn = network.Connect()
+	// 4. Send ClientHello
+	n, err := network.Conn.Write(msg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if n != len(msg) {
+		fmt.Println("not send completely")
+	}
+
 }

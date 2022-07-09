@@ -3,6 +3,7 @@ package help
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 )
 
 func B2H(a []byte) string {
@@ -25,5 +26,15 @@ func Concat(buffers ...[]byte) []byte {
 		buffer = append(buffer, b...)
 	}
 	return buffer
+
+}
+
+func Hexparser(s string) {
+	for i := 0; i < len(s); i++ {
+		fmt.Printf("%c", s[i])
+		if i%2 == 1 {
+			fmt.Printf(" ")
+		}
+	}
 
 }

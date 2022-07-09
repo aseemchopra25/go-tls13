@@ -6,5 +6,8 @@ import (
 )
 
 func TestHelper(t *testing.T) {
-	fmt.Println([]byte{0x13})
+	test := []byte{0x00, 0x7a}
+	x := B2I(test)
+	fmt.Println(x)
+	fmt.Println(I2B(90))
 }
