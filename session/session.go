@@ -1,4 +1,4 @@
-package sesh
+package session
 
 type KeyPair struct {
 	PublicKey  []byte

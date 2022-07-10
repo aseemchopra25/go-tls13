@@ -7,7 +7,7 @@ import (
 
 	"github.com/aseemchopra25/go-toy-tls/help"
 	"github.com/aseemchopra25/go-toy-tls/network"
-	"github.com/aseemchopra25/go-toy-tls/sesh"
+	"github.com/aseemchopra25/go-toy-tls/session"
 )
 
 // 1. Client random
@@ -81,7 +81,7 @@ func CreateHello(name string) {
 	Ch.Psk = []byte{0x00, 0x2d, 0x00, 0x02, 0x01, 0x01}
 
 	// Extension - Key Share
-	pub := sesh.NewKeyPair.PublicKey
+	pub := session.NewKeyPair.PublicKey
 	Ch.Ks = help.Concat([]byte{0x00, 0x33, 0x00, 0x26, 0x00, 0x24, 0x00, 0x1d, 0x00, 0x20}, pub)
 
 	// Extension Length
@@ -96,7 +96,7 @@ func CreateHello(name string) {
 	len2 := help.I2B(uint16(len1 + 4))
 	Ch.Rh = append(Ch.Rh[:], len2[:]...)
 
-	sesh.NewSesh.CHBytes = help.Concat(Ch.Rh, Ch.Hh, Ch.Cv, Ch.Cr, Ch.Sid, Ch.Cs, Ch.Cm, Ch.El, Ch.Sn, Ch.Sg, Ch.Sa, Ch.Sv, Ch.Psk, Ch.Ks)
+	session.NewSesh.CHBytes = help.Concat(Ch.Rh, Ch.Hh, Ch.Cv, Ch.Cr, Ch.Sid, Ch.Cs, Ch.Cm, Ch.El, Ch.Sn, Ch.Sg, Ch.Sa, Ch.Sv, Ch.Psk, Ch.Ks)
 }
 
 func SendHello(name string) {
@@ -105,11 +105,11 @@ func SendHello(name string) {
 	// 3. Connect
 	network.Conn = network.Connect()
 	// 4. Send ClientHello
-	n, err := network.Conn.Write(sesh.NewSesh.CHBytes)
+	n, err := network.Conn.Write(session.NewSesh.CHBytes)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if n != len(sesh.NewSesh.CHBytes) {
+	if n != len(session.NewSesh.CHBytes) {
 		fmt.Println("not send completely")
 	}
 

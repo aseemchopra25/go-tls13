@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/aseemchopra25/go-toy-tls/help"
-	"github.com/aseemchopra25/go-toy-tls/sesh"
+	"github.com/aseemchopra25/go-toy-tls/session"
 	"golang.org/x/crypto/cryptobyte"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
@@ -17,8 +17,8 @@ import (
 func GenerateKeyPair() {
 	b := make([]byte, 32)
 	rand.Read(b)
-	sesh.NewKeyPair.PrivateKey = b
-	sesh.NewKeyPair.PublicKey, _ = curve25519.X25519(b, curve25519.Basepoint)
+	session.NewKeyPair.PrivateKey = b
+	session.NewKeyPair.PublicKey, _ = curve25519.X25519(b, curve25519.Basepoint)
 }
 
 // https://tls13.xargs.org/
@@ -35,32 +35,32 @@ func GenerateKeyPair() {
 // server_handshake_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
 
 func KeyDerivation() {
-	sesh.Sekret.SS, _ = curve25519.X25519(sesh.NewKeyPair.PrivateKey, sesh.NewServerHello.Pubkey)
+	session.Sekret.SS, _ = curve25519.X25519(session.NewKeyPair.PrivateKey, session.NewServerHello.Pubkey)
 
 	salt, secret := make([]byte, 32), make([]byte, 32)
 
 	earlySecret := hkdf.Extract(sha256.New, secret, salt)
 	derivedSecret := deriveSecret(earlySecret, "derived", []byte{})
-	sesh.Sekret.HS = hkdf.Extract(sha256.New, sesh.Sekret.SS, derivedSecret)
-	msgs := help.Concat(sesh.NewSesh.CHBytes[5:], sesh.NewSesh.SHBytes[5:])
-	sesh.Sekret.CHS = deriveSecret(sesh.Sekret.HS, "c hs traffic", msgs)
-	sesh.Sekret.SHS = deriveSecret(sesh.Sekret.HS, "s hs traffic", msgs)
+	session.Sekret.HS = hkdf.Extract(sha256.New, session.Sekret.SS, derivedSecret)
+	msgs := help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:])
+	session.Sekret.CHS = deriveSecret(session.Sekret.HS, "c hs traffic", msgs)
+	session.Sekret.SHS = deriveSecret(session.Sekret.HS, "s hs traffic", msgs)
 
-	sesh.Sekret.CHK = ExpandLabel(sesh.Sekret.CHS, "key", []byte{}, 16) // test with 32
-	sesh.Sekret.CHIV = ExpandLabel(sesh.Sekret.CHS, "iv", []byte{}, 12)
+	session.Sekret.CHK = ExpandLabel(session.Sekret.CHS, "key", []byte{}, 16) // test with 32
+	session.Sekret.CHIV = ExpandLabel(session.Sekret.CHS, "iv", []byte{}, 12)
 
-	sesh.Sekret.SHK = ExpandLabel(sesh.Sekret.SHS, "key", []byte{}, 16) // test with 32
-	sesh.Sekret.SHIV = ExpandLabel(sesh.Sekret.SHS, "iv", []byte{}, 12) // WROTE CHS instead of SHS LOL
+	session.Sekret.SHK = ExpandLabel(session.Sekret.SHS, "key", []byte{}, 16) // test with 32
+	session.Sekret.SHIV = ExpandLabel(session.Sekret.SHS, "iv", []byte{}, 12) // WROTE CHS instead of SHS LOL
 
 	// DEBUG
-	// fmt.Println("Shared Secret		", sesh.Sekret.SS)
-	// fmt.Println("Handshake Secret	", sesh.Sekret.HS)
-	// fmt.Println("Client Handshake Secret	", sesh.Sekret.CHS)
-	// fmt.Println("Server Handshake Secret	", sesh.Sekret.SHS)
-	// fmt.Println("Client Handshake Key	", sesh.Sekret.CHK)
-	// fmt.Println("Client Handshake IV	", sesh.Sekret.CHIV)
-	// fmt.Println("Server Handshake Key	", sesh.Sekret.SHK)
-	// fmt.Println("Server Handshake IV	", sesh.Sekret.SHIV)
+	// fmt.Println("Shared Secret		", session.Sekret.SS)
+	// fmt.Println("Handshake Secret	", session.Sekret.HS)
+	// fmt.Println("Client Handshake Secret	", session.Sekret.CHS)
+	// fmt.Println("Server Handshake Secret	", session.Sekret.SHS)
+	// fmt.Println("Client Handshake Key	", session.Sekret.CHK)
+	// fmt.Println("Client Handshake IV	", session.Sekret.CHIV)
+	// fmt.Println("Server Handshake Key	", session.Sekret.SHK)
+	// fmt.Println("Server Handshake IV	", session.Sekret.SHIV)
 }
 
 // Derive Secret  https://github.com/golang/go/blob/c1a4e0fe014568501b194eb8b04309f54eee6b4c/src/crypto/tls/key_schedule.go#L54

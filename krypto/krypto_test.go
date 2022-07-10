@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/aseemchopra25/go-toy-tls/help"
-	"github.com/aseemchopra25/go-toy-tls/sesh"
+	"github.com/aseemchopra25/go-toy-tls/session"
 	"golang.org/x/crypto/cryptobyte"
 	"golang.org/x/crypto/hkdf"
 )
@@ -32,21 +32,21 @@ func TestKDF(t *testing.T) {
 	salt, secret := make([]byte, 48), make([]byte, 48)
 	earlySecret := hkdf.Extract(sha512.New384, secret, salt)
 	derivedSecret := deriveSecret2(earlySecret, "derived", []byte{})
-	sesh.Sekret.HS = hkdf.Extract(sha512.New384, ss, derivedSecret)
-	fmt.Println(help.B2H((sesh.Sekret.HS)))
+	session.Sekret.HS = hkdf.Extract(sha512.New384, ss, derivedSecret)
+	fmt.Println(help.B2H((session.Sekret.HS)))
 	fmt.Println(help.B2H((hs)))
 
-	if (sesh.Sekret.HS)[10] != hs[10] {
+	if (session.Sekret.HS)[10] != hs[10] {
 		log.Fatal("LOL")
 	}
-	sesh.Sekret.CHS = deriveSecret(hs, "c hs traffic", hh)
-	sesh.Sekret.SHS = deriveSecret(hs, "s hs traffic", hh)
+	session.Sekret.CHS = deriveSecret(hs, "c hs traffic", hh)
+	session.Sekret.SHS = deriveSecret(hs, "s hs traffic", hh)
 
-	sesh.Sekret.CHK = ExpandLabel2(sesh.Sekret.CHS, "key", []byte{}, 32)
-	sesh.Sekret.CHIV = ExpandLabel2(sesh.Sekret.CHS, "iv", []byte{}, 12)
+	session.Sekret.CHK = ExpandLabel2(session.Sekret.CHS, "key", []byte{}, 32)
+	session.Sekret.CHIV = ExpandLabel2(session.Sekret.CHS, "iv", []byte{}, 12)
 
-	sesh.Sekret.SHK = ExpandLabel2(sesh.Sekret.SHS, "key", []byte{}, 32)
-	sesh.Sekret.SHIV = ExpandLabel2(sesh.Sekret.CHS, "iv", []byte{}, 12)
+	session.Sekret.SHK = ExpandLabel2(session.Sekret.SHS, "key", []byte{}, 32)
+	session.Sekret.SHIV = ExpandLabel2(session.Sekret.CHS, "iv", []byte{}, 12)
 
 }
 
