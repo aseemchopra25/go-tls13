@@ -1,46 +1,40 @@
 package server
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/aseemchopra25/go-toy-tls/help"
+	"github.com/aseemchopra25/go-toy-tls/krypto"
 	"github.com/aseemchopra25/go-toy-tls/network"
+	"github.com/aseemchopra25/go-toy-tls/sesh"
 )
-
-type ServerHello struct {
-	Random []byte
-	Pubkey []byte
-}
-
-var NewServerHello ServerHello
 
 func ReadServerHello() {
 	buf := make([]byte, 5)
-	x, err := network.Conn.Read(buf)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if x != 5 {
-		fmt.Println("Unable to read 20 bytes")
-	}
+	network.Conn.Read(buf)
 
 	rest := make([]byte, int(buf[4]))
 	network.Conn.Read(rest)
-	serverHello := help.Concat(buf, rest) // read random and pubkey
-	NewServerHello.Random = serverHello[11:43]
-	NewServerHello.Pubkey = serverHello[len(serverHello)-32:]
-
-	// Checking Values
+	sesh.NewSesh.SHBytes = help.Concat(buf, rest)
+	sesh.NewServerHello.Random = sesh.NewSesh.SHBytes[11:43]
+	sesh.NewServerHello.Pubkey = sesh.NewSesh.SHBytes[len(sesh.NewSesh.SHBytes)-32:]
 
 	// fmt.Println("ServerHello Response:")
-	// help.Hexparser(help.B2H(serverHello)) // remove this
-	// fmt.Println("")
-	// fmt.Println("")
+	// help.Hexparser(help.B2H(sesh.NewSesh.SHBytes)) // remove this
 	// fmt.Println("ServerHello 32 Byte Random Extracted:")
 	// help.Hexparser(help.B2H(NewServerHello.Random))
 	// fmt.Println("")
 	// fmt.Println("")
 	// fmt.Println("ServerHello 32 Byte PubKey Extracted:")
 	// help.Hexparser(help.B2H(NewServerHello.Pubkey))
+
+}
+
+func ReadServerHandshake() {
+	buf := make([]byte, 5)
+	network.Conn.Read(buf)
+	rest := make([]byte, int(buf[4]))
+	network.Conn.Read(rest)
+	encSHS := help.Concat(buf, rest)
+	// fmt.Println(encSHS)
+	sesh.NewSesh.SHSBytes = krypto.Decrypt(sesh.Sekret.SHK, sesh.Sekret.SHIV, encSHS)
+	// fmt.Println(sesh.NewSesh.SHSBytes) // WORKS
 }

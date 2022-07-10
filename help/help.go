@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"strings"
 )
 
 func B2H(a []byte) string {
@@ -37,4 +38,10 @@ func Hexparser(s string) {
 		}
 	}
 
+}
+
+func HexToByte(s string) []byte {
+	s = strings.Join(strings.Fields(s), "")
+	x, _ := hex.DecodeString(s)
+	return x
 }

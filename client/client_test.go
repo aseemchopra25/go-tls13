@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/aseemchopra25/go-toy-tls/help"
-	"github.com/aseemchopra25/go-toy-tls/keypair"
+	"github.com/aseemchopra25/go-toy-tls/krypto"
 )
 
 // write function to convert byte to hex
@@ -17,7 +17,7 @@ import (
 // }
 
 func TestClientHello(t *testing.T) {
-	keypair.Generate()
+	krypto.GenerateKeyPair()
 	SendHello("test.com")
 	// test Record Header
 	fmt.Println("Record:", help.B2H(Ch.Rh))
