@@ -5,16 +5,17 @@ type KeyPair struct {
 	PrivateKey []byte
 }
 
-var NewKeyPair KeyPair
+var NewKeyPair = KeyPair{}
 
 type ServerHello struct {
 	Random []byte
 	Pubkey []byte
 }
 
-var NewServerHello ServerHello
+var NewServerHello = ServerHello{}
 
 type Secret struct {
+	// Handshake
 	SS   []byte
 	HS   []byte
 	CHS  []byte
@@ -23,14 +24,31 @@ type Secret struct {
 	CHIV []byte
 	SHK  []byte
 	SHIV []byte
+
+	// Application
+	CAK  []byte
+	CAIV []byte
+	SAK  []byte
+	SAIV []byte
+
+	// Finished
+	CHF []byte
 }
 
-var Sekret Secret
+var Sekret = Secret{}
 
 type Session struct {
 	CHBytes  []byte
 	SHBytes  []byte
 	SHSBytes []byte
+	CHFBytes []byte
 }
 
 var NewSesh = Session{}
+
+type Counter struct {
+	Sent uint8
+	Recv uint8
+}
+
+var NewCounter = Counter{}

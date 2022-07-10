@@ -34,7 +34,7 @@ func GenerateKeyPair() {
 // client_handshake_iv = HKDF-Expand-Label(key: client_secret, label: "iv", ctx: "", len: 12)
 // server_handshake_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
 
-func KeyDerivation() {
+func HSKDerivation() {
 	session.Sekret.SS, _ = curve25519.X25519(session.NewKeyPair.PrivateKey, session.NewServerHello.Pubkey)
 
 	salt, secret := make([]byte, 32), make([]byte, 32)
@@ -95,6 +95,8 @@ func Decrypt(key, iv, wrapper []byte) []byte {
 	if err != nil {
 		panic(err.Error())
 	}
+	// fmt.Println("LOL")
+	// Something wrong here
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
 		panic(err.Error())
@@ -102,6 +104,7 @@ func Decrypt(key, iv, wrapper []byte) []byte {
 
 	extra, cipher := wrapper[:5], wrapper[5:]
 	// fmt.Println(extra, cipher)
+	// fmt.Println("HERE")
 	plain, err := aesgcm.Open(nil, iv, cipher, extra)
 	if err != nil {
 		panic(err.Error()) // THROWN UP
@@ -110,3 +113,59 @@ func Decrypt(key, iv, wrapper []byte) []byte {
 	return plain
 
 }
+
+func Encrypt(key, iv, plain, extra []byte) []byte {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	ciphertxt := aesgcm.Seal(nil, iv, plain, extra)
+	return append(extra, ciphertxt...)
+}
+
+// https://tls13.xargs.org/
+// empty_hash = SHA384("")
+// derived_secret = HKDF-Expand-Label(key: handshake_secret, label: "derived", ctx: empty_hash, len: 48)
+// master_secret = HKDF-Extract(salt: derived_secret, key: 00...)
+// client_secret = HKDF-Expand-Label(key: master_secret, label: "c ap traffic", ctx: handshake_hash, len: 48)
+// server_secret = HKDF-Expand-Label(key: master_secret, label: "s ap traffic", ctx: handshake_hash, len: 48)
+// client_application_key = HKDF-Expand-Label(key: client_secret, label: "key", ctx: "", len: 32)
+// server_application_key = HKDF-Expand-Label(key: server_secret, label: "key", ctx: "", len: 32)
+// client_application_iv = HKDF-Expand-Label(key: client_secret, label: "iv", ctx: "", len: 12)
+// server_application_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
+
+func AKDerivation() {
+	msgs := help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:], session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1]) // -1 on SHS because last byte is 0x16 tls1.3 disguised as tls 1.2
+	zeros := make([]byte, 32)
+	derivedSecret := deriveSecret(session.Sekret.HS, "derived", []byte{})
+	masterSecret := hkdf.Extract(sha256.New, zeros, derivedSecret)
+
+	casecret := deriveSecret(masterSecret, "c ap traffic", msgs)
+
+	session.Sekret.CAK = ExpandLabel(casecret, "key", []byte{}, 16)
+	session.Sekret.CAIV = ExpandLabel(casecret, "iv", []byte{}, 12)
+
+	sasecret := deriveSecret(masterSecret, "s ap traffic", msgs)
+
+	session.Sekret.SAK = ExpandLabel(sasecret, "key", []byte{}, 16)
+	session.Sekret.SAIV = ExpandLabel(sasecret, "iv", []byte{}, 12)
+}
+
+func CHFKDerivation() {
+	session.Sekret.CHF = ExpandLabel(session.Sekret.CHS, "finished", []byte{}, 32)
+}
+
+// https://github.com/syncsynchalt/tincan-tls/blob/51a1e468df0935fac156f7e7af6900cfa9cb389f/tls/conncrypt.go#L44
+
+// func BuildIV(seq uint64, base []byte) []byte {
+// 	result := make([]byte, len(base))
+// 	copy(result, base)
+// 	for i := 0; i < 8; i++ {
+// 		result[len(result)-i-1] ^= byte(seq >> uint(8*i))
+// 	}
+// 	return result
+// }

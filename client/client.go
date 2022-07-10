@@ -1,11 +1,14 @@
 package client
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"fmt"
 	"log"
 
 	"github.com/aseemchopra25/go-toy-tls/help"
+	"github.com/aseemchopra25/go-toy-tls/krypto"
 	"github.com/aseemchopra25/go-toy-tls/network"
 	"github.com/aseemchopra25/go-toy-tls/session"
 )
@@ -100,17 +103,51 @@ func CreateHello(name string) {
 }
 
 func SendHello(name string) {
-	// 3. Connect
 	CreateHello(name)
-	// 3. Connect
 	network.Conn = network.Connect()
-	// 4. Send ClientHello
-	n, err := network.Conn.Write(session.NewSesh.CHBytes)
+	send(session.NewSesh.CHBytes)
+
+}
+func SendChangeCipherSpec() {
+	send([]byte{0x14, 0x03, 0x03, 0x00, 0x01, 0x01})
+}
+
+func SendHandshakeFinished() {
+	// 0x20 as it's a 32 byte hmac-sha256 payload
+	session.NewSesh.CHFBytes = help.Concat([]byte{0x14, 0x00, 0x00, 0x20}, payload(), []byte{0x16})
+	// we need to send this along with a Wrapped record so there would be "additional data"
+	// to be encrypted
+	extra := help.Concat([]byte{0x17, 0x03, 0x03, 0x35}) // 0x35 = 53 bytes = (chf:37 (4+32+1) + aead:16)
+	send(krypto.Encrypt(session.Sekret.CHK, session.Sekret.CHIV, session.NewSesh.CHFBytes, extra))
+}
+
+func SendApplicationData(data []byte) {
+	session.NewCounter.Sent += 1
+	send(EncryptAppData(data))
+}
+
+func EncryptAppData(data []byte) []byte {
+	data = append(data, 0x17)                                                      // disguise for tls 1.2 application data added at end
+	extra := help.Concat([]byte{0x17, 0x03, 0x03}, help.I2B(uint16(len(data)+16))) // 16 for AEAD tag
+	return krypto.Encrypt(session.Sekret.CAK, session.Sekret.CAIV, data, extra)    // change caiv
+}
+
+func payload() []byte {
+	// Client Handshake Finished
+	fhash := sha256.Sum256(help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:], session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1]))
+	hm := hmac.New(sha256.New, session.Sekret.CHF)
+	hm.Write(fhash[:])
+	return hm.Sum(nil)
+}
+
+// helper function
+
+func send(buffer []byte) {
+	n, err := network.Conn.Write(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if n != len(session.NewSesh.CHBytes) {
-		fmt.Println("not send completely")
+	if n != len(buffer) {
+		fmt.Println("All bytes didn't go through")
 	}
-
 }
