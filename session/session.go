@@ -53,4 +53,5 @@ type Counter struct {
 	Recv uint8
 }
 
-var NewCounter = Counter{}
+var HSCounter = Counter{}
+var ACounter = Counter{}

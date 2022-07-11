@@ -123,7 +123,7 @@ func SendHandshakeFinished() {
 }
 
 func SendApplicationData(data []byte) {
-	session.NewCounter.Sent += 1
+	session.HSCounter.Sent += 1
 	send(EncryptAppData(data))
 }
 

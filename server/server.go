@@ -35,14 +35,14 @@ func ReadRec2() []byte {
 	fmt.Println("")
 	fmt.Println("///////////////////////DECRYPTED RECORD///////////////////////")
 	fmt.Println("")
-	fmt.Println(session.NewCounter.Recv)
+	fmt.Println(session.HSCounter.Recv)
 	// keep the xor-op
-	// session.Sekret.SHIV[11] ^= session.NewCounter.Recv
-	session.Sekret.SHIV = NewIV(session.NewCounter.Recv, session.Sekret.SHIV)
+	// session.Sekret.SHIV[11] ^= session.HSCounter.Recv
+	session.Sekret.SHIV = NewIV(session.HSCounter.Recv, session.Sekret.SHIV)
 	fmt.Println(string(krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)))
 	// remove these lines
 
-	session.NewCounter.Recv++
+	session.HSCounter.Recv++
 	return fin
 
 }
@@ -98,9 +98,9 @@ func ReadAppData() []byte {
 	fmt.Println(fin)
 	iv := make([]byte, 12)
 	copy(iv, session.Sekret.SAIV)
-	iv[11] ^= session.NewCounter.Recv
+	iv[11] ^= session.HSCounter.Recv
 	decrypt := krypto.Decrypt(session.Sekret.SAK, iv, fin) // maybe this is cert
-	session.NewCounter.Recv += 1
+	session.HSCounter.Recv += 1
 	fmt.Println(string(decrypt))
 	return decrypt
 }
