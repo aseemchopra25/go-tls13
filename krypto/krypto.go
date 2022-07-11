@@ -141,7 +141,7 @@ func Encrypt(key, iv, plain, extra []byte) []byte {
 
 // PROBLEM
 func AKDerivation() {
-	msgs := help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:], session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1]) // -1 on SHS because last byte is 0x16 tls1.3 disguised as tls 1.2
+	msgs := HHash()
 	zeros := make([]byte, 32)
 	derivedSecret := deriveSecret(session.Sekret.HS, "derived", []byte{})
 	masterSecret := hkdf.Extract(sha256.New, zeros, derivedSecret)
@@ -155,6 +155,20 @@ func AKDerivation() {
 
 	session.Sekret.SAK = ExpandLabel(sasecret, "key", []byte{}, 16)
 	session.Sekret.SAIV = ExpandLabel(sasecret, "iv", []byte{}, 12)
+}
+
+func HHash() []byte {
+
+	// -1 on SHS because last byte is 0x16 tls1.3 disguised as tls 1.2
+
+	msgs := help.Concat(
+		session.NewSesh.CHBytes[5:], // unwrapped
+		session.NewSesh.SHBytes[5:], // unwrapped
+		session.NewSesh.SEEBytes[:len(session.NewSesh.SEEBytes)-1],
+		session.NewSesh.SCBytes[:len(session.NewSesh.SCBytes)-1],
+		session.NewSesh.SCVBytes[:len(session.NewSesh.SCVBytes)-1],
+		session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1])
+	return msgs
 }
 
 func CHFKDerivation() {

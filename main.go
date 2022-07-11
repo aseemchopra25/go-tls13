@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/aseemchopra25/go-toy-tls/client"
@@ -22,38 +23,38 @@ func main() {
 	// 4. Handshake Key Derivation
 	krypto.HSKDerivation()
 
-	// No Server Change Cipher Spec 0x20 seems to be seen here
-	server.ReadRec2() // Confirmed Server Encrypted Extensions
-	server.ReadRec2() // Confirmed Server Certificate
-	// something was skipped here (which we didn't receive)
-	session.HSCounter.Recv += 1
-	server.ReadRec2()           // Confirmed Server Cert Verify
-	session.HSCounter.Recv -= 3 // Confirmed Server Handshake Finished
+	// Skipping Server Change Cipher Spec 0x20
 
-	server.ReadRec2() // ? Server Handshake Finished
-	os.Exit(1)        // remove this
+	session.NewSesh.SEEBytes = server.ReadRec2() // Confirmed Server Encrypted Extensions 	0
 
-	server.ReadRec2() //
+	session.NewSesh.SCBytes = server.ReadRec2() // Confirmed Server Certificate				1
 
-	// // 5. Read Server Handshake
-	// server.ReadServerHandshake()
+	session.HSCounter.Recv += 1                  // Skipping Server Handshake Finished 2+1=	3
+	session.NewSesh.SCVBytes = server.ReadRec2() // Confirmed Server Cert Verify			4
 
-	// // 6. Application Key Derivation
-	// krypto.AKDerivation()
+	session.HSCounter.Recv -= 3
+	session.NewSesh.SHSBytes = server.ReadRec2() // Confirmed Server Handshake Finished		1
 
-	// // 7. Send Client Change Cipher Spec
-	// client.SendChangeCipherSpec()
+	// 6. Application Key Derivation
+	krypto.AKDerivation()
 
-	// // 8. Client Handshake Finished Key Derivation
-	// krypto.CHFKDerivation()
+	// ERROR ?
+	server.ReadRec3()
+	os.Exit(1) // remove this
 
-	// // 9. Send Client Handshake Finished Message
-	// client.SendHandshakeFinished()
+	// 7. Send Client Change Cipher Spec
+	client.SendChangeCipherSpec()
 
-	// // 10. Send Application Data
-	// req := fmt.Sprintf("GET / HTTP/1.1\r\nHost: %s\r\n\r\n", "chopraaseem.com")
-	// client.SendApplicationData([]byte(req))
+	// 8. Client Handshake Finished Key Derivation
+	krypto.CHFKDerivation()
 
-	// // 11. Read Application Data
-	// server.ReadApplicationData() // session ticket ignore/test
+	// 9. Send Client Handshake Finished Message
+	client.SendHandshakeFinished()
+
+	// 10. Send Application Data
+	req := fmt.Sprintf("GET / HTTP/1.1\r\nHost: %s\r\n\r\n", "chopraaseem.com")
+	client.SendApplicationData([]byte(req))
+
+	// 11. Read Application Data
+	server.ReadApplicationData() // session ticket ignore/test
 }

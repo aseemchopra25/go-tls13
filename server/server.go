@@ -10,6 +10,8 @@ import (
 	"github.com/aseemchopra25/go-toy-tls/session"
 )
 
+// For Unwrapped Records
+
 func ReadRec() []byte {
 	buf := make([]byte, 5)
 	network.Conn.Read(buf)
@@ -20,6 +22,8 @@ func ReadRec() []byte {
 	return fin
 
 }
+
+// For Wrapped Handshake Messages
 func ReadRec2() []byte {
 	buf := make([]byte, 5)
 	network.Conn.Read(buf)
@@ -27,26 +31,47 @@ func ReadRec2() []byte {
 	rest := make([]byte, l)
 	network.Conn.Read(rest)
 	fin := help.Concat(buf, rest)
-	// remove these lines
 	fmt.Println("")
-	fmt.Println("----------------------PRINTING RECORD-----------------------------")
+	fmt.Println("-----------ENCRYPTED RECORD-----------")
+	fmt.Println(fin) // could change to HEX if needed help.B2H
 	fmt.Println("")
+	fmt.Println("///////////////////////DECRYPTED RECORD///////////////////////")
+	fmt.Println("HSCOUNTER RECV")
+	fmt.Println(session.HSCounter.Recv)
+
+	session.Sekret.SHIV = NewIV(session.HSCounter.Recv, session.Sekret.SHIV)
+
+	ret := krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)
+	fmt.Println(help.B2H(ret))
+	session.HSCounter.Recv++
+	return ret
+
+}
+
+func ReadRec3() []byte {
+	buf := make([]byte, 5)
+	network.Conn.Read(buf)
+	l := binary.BigEndian.Uint16(buf[3:])
+	rest := make([]byte, l)
+	network.Conn.Read(rest)
+	fin := help.Concat(buf, rest)
+
+	fmt.Println("")
+	fmt.Println("-----------ENCRYPTED RECORD-----------")
 	fmt.Println(fin) // could change to HEX if needed help.B2H
 	fmt.Println("")
 	fmt.Println("///////////////////////DECRYPTED RECORD///////////////////////")
 	fmt.Println("")
-	fmt.Println(session.HSCounter.Recv)
-	// keep the xor-op
-	// session.Sekret.SHIV[11] ^= session.HSCounter.Recv
-	session.Sekret.SHIV = NewIV(session.HSCounter.Recv, session.Sekret.SHIV)
 
-	fmt.Println(help.B2H(krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)))
-	// remove these lines
-
-	session.HSCounter.Recv++
-	return fin
+	session.Sekret.SAIV = NewIV(session.ACounter.Recv, session.Sekret.SAIV)
+	ret := krypto.Decrypt(session.Sekret.SAK, session.Sekret.SAIV, fin)
+	fmt.Println(help.B2H(ret))
+	session.ACounter.Recv++
+	return ret
 
 }
+
+// Generation of new IV
 
 func NewIV(counter uint8, iv []byte) []byte {
 	res := make([]byte, len(iv))
@@ -58,22 +83,13 @@ func NewIV(counter uint8, iv []byte) []byte {
 }
 
 func ReadServerHello() {
-	session.NewSesh.SHBytes = ReadRec()
+	session.NewSesh.SHBytes = ReadRec() // as it's unwrapped
 	session.NewServerHello.Random = session.NewSesh.SHBytes[11:43]
 	session.NewServerHello.Pubkey = session.NewSesh.SHBytes[len(session.NewSesh.SHBytes)-32:]
 
 }
 
-func ReadServerHandshake() {
-	fin := ReadRec2()
-	session.NewSesh.SHSBytes = krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)
-}
-
 func ReadApplicationData() []byte {
-	ReadRec2() // Ignore Session Ticket
-	ReadRec2() // Ignore Session Ticket
-	ReadRec2() // Ignore Session Ticket
-	ReadRec2() // Ignore Session Ticket
 	var resp []byte
 	// for {
 	// 	plain := GetData() // TLS in chunks

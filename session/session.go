@@ -44,6 +44,11 @@ type Session struct {
 	SHBytes  []byte
 	SHSBytes []byte
 	CHFBytes []byte
+	SEEBytes []byte
+	SCBytes  []byte
+	SCVBytes []byte
+	// SHFBytes  []byte
+
 }
 
 var NewSesh = Session{}
