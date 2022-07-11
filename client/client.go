@@ -115,6 +115,7 @@ func SendChangeCipherSpec() {
 func SendHandshakeFinished() {
 	// 0x20 as it's a 32 byte hmac-sha256 payload
 	session.NewSesh.CHFBytes = help.Concat([]byte{0x14, 0x00, 0x00, 0x20}, payload(), []byte{0x16})
+	// fmt.Println(session.NewSesh.CHFBytes)
 	// we need to send this along with a Wrapped record so there would be "additional data"
 	// to be encrypted
 	extra := help.Concat([]byte{0x17, 0x03, 0x03, 0x35}) // 0x35 = 53 bytes = (chf:37 (4+32+1) + aead:16)
@@ -137,6 +138,7 @@ func payload() []byte {
 	fhash := sha256.Sum256(help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:], session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1]))
 	hm := hmac.New(sha256.New, session.Sekret.CHF)
 	hm.Write(fhash[:])
+	// fmt.Println(hm.Sum(nil)) // remove this
 	return hm.Sum(nil)
 }
 

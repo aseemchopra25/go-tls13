@@ -90,22 +90,22 @@ func ExpandLabel(secret []byte, label string, context []byte, length int) []byte
 	return out
 }
 
+// PROBLEM
+
 func Decrypt(key, iv, wrapper []byte) []byte {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err.Error())
 	}
-	// fmt.Println("LOL")
-	// Something wrong here
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	extra, cipher := wrapper[:5], wrapper[5:]
+	extra, cipherx := wrapper[:5], wrapper[5:]
 	// fmt.Println(extra, cipher)
 	// fmt.Println("HERE")
-	plain, err := aesgcm.Open(nil, iv, cipher, extra)
+	plain, err := aesgcm.Open(nil, iv, cipherx, extra)
 	if err != nil {
 		panic(err.Error()) // THROWN UP
 	}
@@ -138,6 +138,7 @@ func Encrypt(key, iv, plain, extra []byte) []byte {
 // client_application_iv = HKDF-Expand-Label(key: client_secret, label: "iv", ctx: "", len: 12)
 // server_application_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
 
+// PROBLEM
 func AKDerivation() {
 	msgs := help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:], session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1]) // -1 on SHS because last byte is 0x16 tls1.3 disguised as tls 1.2
 	zeros := make([]byte, 32)
@@ -157,6 +158,7 @@ func AKDerivation() {
 
 func CHFKDerivation() {
 	session.Sekret.CHF = ExpandLabel(session.Sekret.CHS, "finished", []byte{}, 32)
+	// fmt.Println("CLIENT HANDSHAKE FINISHED:", session.Sekret.CHF)
 }
 
 // https://github.com/syncsynchalt/tincan-tls/blob/51a1e468df0935fac156f7e7af6900cfa9cb389f/tls/conncrypt.go#L44

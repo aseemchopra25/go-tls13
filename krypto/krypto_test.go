@@ -1,7 +1,10 @@
 package krypto
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"testing"
@@ -24,6 +27,34 @@ import (
 // 	fmt.Println(help.B2H(b)) // works
 
 // }
+
+func TestAES(t *testing.T) {
+	key := []byte("AES256Key-32Characters1234567890")
+	ciphertext, _ := hex.DecodeString("2df87baf86b5073ef1f03e3cc738de75b511400f5465bb0ddeacf47ae4dc267d")
+
+	nonce, _ := hex.DecodeString("afb8a7579bf971db9f8ceeed")
+	fmt.Println(Decrypt2(key, nonce, ciphertext))
+
+}
+
+func Decrypt2(key, nonce, ciphertext []byte) []byte {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err.Error())
+	}
+	// fmt.Println("LOL")
+	// Something wrong here
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+	plain, err := aesgcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		panic(err.Error()) // THROWN UP
+	}
+
+	return plain
+}
 
 func TestKDF(t *testing.T) {
 	ss := help.HexToByte("df4a291baa1eb7cfa6934b29b474baad2697e29f1f920dcc77c8a0a088447624")
