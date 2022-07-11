@@ -10,10 +10,7 @@ import (
 	"github.com/aseemchopra25/go-toy-tls/session"
 )
 
-var flag int
-
 func ReadRec() []byte {
-	flag++
 	buf := make([]byte, 5)
 	network.Conn.Read(buf)
 	l := binary.BigEndian.Uint16(buf[3:])
@@ -24,17 +21,39 @@ func ReadRec() []byte {
 
 }
 func ReadRec2() []byte {
-	flag++
 	buf := make([]byte, 5)
 	network.Conn.Read(buf)
 	l := binary.BigEndian.Uint16(buf[3:])
 	rest := make([]byte, l)
 	network.Conn.Read(rest)
 	fin := help.Concat(buf, rest)
+	// remove these lines
+	fmt.Println("")
 	fmt.Println("----------------------PRINTING RECORD-------------------------------")
+	fmt.Println("")
 	fmt.Println(fin)
+	fmt.Println("")
+	fmt.Println("///////////////////////DECRYPTED RECORD///////////////////////")
+	fmt.Println("")
+	fmt.Println(session.NewCounter.Recv)
+	// keep the xor-op
+	// session.Sekret.SHIV[11] ^= session.NewCounter.Recv
+	session.Sekret.SHIV = NewIV(session.NewCounter.Recv, session.Sekret.SHIV)
+	fmt.Println(string(krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)))
+	// remove these lines
+
+	session.NewCounter.Recv++
 	return fin
 
+}
+
+func NewIV(counter uint8, iv []byte) []byte {
+	res := make([]byte, len(iv))
+	copy(res, iv)
+	for i := 0; i < 12; i++ {
+		res[len(res)-i-1] ^= byte(counter >> uint(12*i))
+	}
+	return res
 }
 
 func ReadServerHello() {
@@ -68,7 +87,6 @@ func ReadApplicationData() []byte {
 
 // PROBLEM: Message Reading seems fine though
 func ReadAppData() []byte {
-	flag++
 	buf := make([]byte, 5)
 	network.Conn.Read(buf)
 	// fmt.Println(buf)

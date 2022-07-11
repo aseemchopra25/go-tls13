@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/aseemchopra25/go-toy-tls/client"
 	"github.com/aseemchopra25/go-toy-tls/krypto"
@@ -21,25 +21,35 @@ func main() {
 	// 4. Handshake Key Derivation
 	krypto.HSKDerivation()
 
-	// 5. Read Server Handshake
-	server.ReadServerHandshake()
+	// No Server Change Cipher Spec 0x20 seems to be seen here
+	server.ReadRec2() // 2. Possibly Server Encrypted Extensions
+	server.ReadRec2() // 3. Possibly Server Certificate
 
-	// 6. Application Key Derivation
-	krypto.AKDerivation()
+	server.ReadRec2() // Possibly Server Cert Verify
+	os.Exit(1)        // remove this
 
-	// 7. Send Client Change Cipher Spec
-	client.SendChangeCipherSpec()
+	server.ReadRec2() // Possibly Server Handshake Finished
+	server.ReadRec2() //
 
-	// 8. Client Handshake Finished Key Derivation
-	krypto.CHFKDerivation()
+	// // 5. Read Server Handshake
+	// server.ReadServerHandshake()
 
-	// 9. Send Client Handshake Finished Message
-	client.SendHandshakeFinished()
+	// // 6. Application Key Derivation
+	// krypto.AKDerivation()
 
-	// 10. Send Application Data
-	req := fmt.Sprintf("GET / HTTP/1.1\r\nHost: %s\r\n\r\n", "chopraaseem.com")
-	client.SendApplicationData([]byte(req))
+	// // 7. Send Client Change Cipher Spec
+	// client.SendChangeCipherSpec()
 
-	// 11. Read Application Data
-	server.ReadApplicationData() // session ticket ignore/test
+	// // 8. Client Handshake Finished Key Derivation
+	// krypto.CHFKDerivation()
+
+	// // 9. Send Client Handshake Finished Message
+	// client.SendHandshakeFinished()
+
+	// // 10. Send Application Data
+	// req := fmt.Sprintf("GET / HTTP/1.1\r\nHost: %s\r\n\r\n", "chopraaseem.com")
+	// client.SendApplicationData([]byte(req))
+
+	// // 11. Read Application Data
+	// server.ReadApplicationData() // session ticket ignore/test
 }
