@@ -27,10 +27,11 @@ func main() {
 	server.ReadRec2() // Confirmed Server Certificate
 	// something was skipped here (which we didn't receive)
 	session.HSCounter.Recv += 1
-	server.ReadRec2() // Confirmed Server Cert Verify
+	server.ReadRec2()           // Confirmed Server Cert Verify
+	session.HSCounter.Recv -= 3 // Confirmed Server Handshake Finished
 
-	// server.ReadRec2() // ? Server Handshake Finished
-	os.Exit(1) // remove this
+	server.ReadRec2() // ? Server Handshake Finished
+	os.Exit(1)        // remove this
 
 	server.ReadRec2() //
 
