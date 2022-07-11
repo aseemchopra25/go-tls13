@@ -39,7 +39,8 @@ func ReadRec2() []byte {
 	// keep the xor-op
 	// session.Sekret.SHIV[11] ^= session.HSCounter.Recv
 	session.Sekret.SHIV = NewIV(session.HSCounter.Recv, session.Sekret.SHIV)
-	fmt.Println(string(krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)))
+
+	fmt.Println(krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin))
 	// remove these lines
 
 	session.HSCounter.Recv++

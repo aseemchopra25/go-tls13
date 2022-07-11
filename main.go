@@ -6,6 +6,7 @@ import (
 	"github.com/aseemchopra25/go-toy-tls/client"
 	"github.com/aseemchopra25/go-toy-tls/krypto"
 	"github.com/aseemchopra25/go-toy-tls/server"
+	"github.com/aseemchopra25/go-toy-tls/session"
 )
 
 func main() {
@@ -22,11 +23,12 @@ func main() {
 	krypto.HSKDerivation()
 
 	// No Server Change Cipher Spec 0x20 seems to be seen here
-	server.ReadRec2() // 2. Possibly Server Encrypted Extensions
-	server.ReadRec2() // 3. Possibly Server Certificate
-
-	server.ReadRec2() // Possibly Server Cert Verify
-	os.Exit(1)        // remove this
+	server.ReadRec2() // 2. Confirmed Server Encrypted Extensions
+	server.ReadRec2() // 3. Confirmed Server Certificate
+	// something was skipped here (which we didn't receive)
+	session.HSCounter.Recv += 1 // THIS WORKS! seems it's SHF not SCV
+	server.ReadRec2()           // Possibly Server Cert Verify??
+	os.Exit(1)                  // remove this
 
 	server.ReadRec2() // Possibly Server Handshake Finished
 	server.ReadRec2() //
