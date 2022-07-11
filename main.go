@@ -23,14 +23,15 @@ func main() {
 	krypto.HSKDerivation()
 
 	// No Server Change Cipher Spec 0x20 seems to be seen here
-	server.ReadRec2() // 2. Confirmed Server Encrypted Extensions
-	server.ReadRec2() // 3. Confirmed Server Certificate
+	server.ReadRec2() // Confirmed Server Encrypted Extensions
+	server.ReadRec2() // Confirmed Server Certificate
 	// something was skipped here (which we didn't receive)
-	session.HSCounter.Recv += 1 // THIS WORKS! seems it's SHF not SCV
-	server.ReadRec2()           // Possibly Server Cert Verify??
-	os.Exit(1)                  // remove this
+	session.HSCounter.Recv += 1
+	server.ReadRec2() // Confirmed Server Cert Verify
 
-	server.ReadRec2() // Possibly Server Handshake Finished
+	// server.ReadRec2() // ? Server Handshake Finished
+	os.Exit(1) // remove this
+
 	server.ReadRec2() //
 
 	// // 5. Read Server Handshake

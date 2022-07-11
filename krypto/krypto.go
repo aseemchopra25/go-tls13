@@ -34,6 +34,7 @@ func GenerateKeyPair() {
 // client_handshake_iv = HKDF-Expand-Label(key: client_secret, label: "iv", ctx: "", len: 12)
 // server_handshake_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
 
+// THIS IS FULLY FUNCTIONAL
 func HSKDerivation() {
 	session.Sekret.SS, _ = curve25519.X25519(session.NewKeyPair.PrivateKey, session.NewServerHello.Pubkey)
 

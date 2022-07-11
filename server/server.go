@@ -29,9 +29,9 @@ func ReadRec2() []byte {
 	fin := help.Concat(buf, rest)
 	// remove these lines
 	fmt.Println("")
-	fmt.Println("----------------------PRINTING RECORD-------------------------------")
+	fmt.Println("----------------------PRINTING RECORD-----------------------------")
 	fmt.Println("")
-	fmt.Println(fin)
+	fmt.Println(fin) // could change to HEX if needed help.B2H
 	fmt.Println("")
 	fmt.Println("///////////////////////DECRYPTED RECORD///////////////////////")
 	fmt.Println("")
@@ -40,7 +40,7 @@ func ReadRec2() []byte {
 	// session.Sekret.SHIV[11] ^= session.HSCounter.Recv
 	session.Sekret.SHIV = NewIV(session.HSCounter.Recv, session.Sekret.SHIV)
 
-	fmt.Println(krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin))
+	fmt.Println(help.B2H(krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)))
 	// remove these lines
 
 	session.HSCounter.Recv++
@@ -65,7 +65,7 @@ func ReadServerHello() {
 }
 
 func ReadServerHandshake() {
-	fin := ReadRec()
+	fin := ReadRec2()
 	session.NewSesh.SHSBytes = krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)
 }
 
