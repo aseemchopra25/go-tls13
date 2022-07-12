@@ -38,8 +38,12 @@ func main() {
 	// 6. Application Key Derivation
 	krypto.AKDerivation()
 
-	// ERROR ?
-	server.ReadRec3()
+	server.ReadRec3() // Server New Session Ticket (SAIV/SAK)
+
+	// --------------------____________________END____________________---------------
+
+	// server.ReadRec3() NO RESPONSE NOW IT"S TIME TO SEND STUFF
+
 	os.Exit(1) // remove this
 
 	// 7. Send Client Change Cipher Spec
