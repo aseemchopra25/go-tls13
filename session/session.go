@@ -15,17 +15,19 @@ type ServerHello struct {
 var NewServerHello = ServerHello{}
 
 type Secret struct {
-	// Handshake
-	SS   []byte
-	HS   []byte
-	CHS  []byte
-	SHS  []byte
+	// Handshake Secrets
+	SS  []byte
+	HS  []byte
+	CHS []byte
+	SHS []byte
+
+	// Handshake Keys & IV
 	CHK  []byte
 	CHIV []byte
 	SHK  []byte
 	SHIV []byte
 
-	// Application
+	// Application Keys & IV
 	CAK  []byte
 	CAIV []byte
 	SAK  []byte
@@ -42,6 +44,11 @@ type Session struct {
 	SHBytes  []byte
 	SHSBytes []byte
 	CHFBytes []byte
+	SEEBytes []byte
+	SCBytes  []byte
+	SCVBytes []byte
+	// SHFBytes  []byte
+
 }
 
 var NewSesh = Session{}
@@ -51,4 +58,5 @@ type Counter struct {
 	Recv uint8
 }
 
-var NewCounter = Counter{}
+var HSCounter = Counter{}
+var ACounter = Counter{}

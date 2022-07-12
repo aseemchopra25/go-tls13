@@ -34,6 +34,7 @@ func GenerateKeyPair() {
 // client_handshake_iv = HKDF-Expand-Label(key: client_secret, label: "iv", ctx: "", len: 12)
 // server_handshake_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
 
+// THIS IS FULLY FUNCTIONAL
 func HSKDerivation() {
 	session.Sekret.SS, _ = curve25519.X25519(session.NewKeyPair.PrivateKey, session.NewServerHello.Pubkey)
 
@@ -90,22 +91,22 @@ func ExpandLabel(secret []byte, label string, context []byte, length int) []byte
 	return out
 }
 
+// PROBLEM
+
 func Decrypt(key, iv, wrapper []byte) []byte {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err.Error())
 	}
-	// fmt.Println("LOL")
-	// Something wrong here
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	extra, cipher := wrapper[:5], wrapper[5:]
+	extra, cipherx := wrapper[:5], wrapper[5:]
 	// fmt.Println(extra, cipher)
 	// fmt.Println("HERE")
-	plain, err := aesgcm.Open(nil, iv, cipher, extra)
+	plain, err := aesgcm.Open(nil, iv, cipherx, extra)
 	if err != nil {
 		panic(err.Error()) // THROWN UP
 	}
@@ -138,8 +139,9 @@ func Encrypt(key, iv, plain, extra []byte) []byte {
 // client_application_iv = HKDF-Expand-Label(key: client_secret, label: "iv", ctx: "", len: 12)
 // server_application_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
 
+// PROBLEM
 func AKDerivation() {
-	msgs := help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:], session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1]) // -1 on SHS because last byte is 0x16 tls1.3 disguised as tls 1.2
+	msgs := HHash()
 	zeros := make([]byte, 32)
 	derivedSecret := deriveSecret(session.Sekret.HS, "derived", []byte{})
 	masterSecret := hkdf.Extract(sha256.New, zeros, derivedSecret)
@@ -155,8 +157,34 @@ func AKDerivation() {
 	session.Sekret.SAIV = ExpandLabel(sasecret, "iv", []byte{}, 12)
 }
 
+func HHash() []byte {
+
+	// -1 on SHS because last byte is 0x16 tls1.3 disguised as tls 1.2
+
+	msgs := help.Concat(
+		session.NewSesh.CHBytes[5:], // unwrapped
+		session.NewSesh.SHBytes[5:], // unwrapped
+		session.NewSesh.SEEBytes[:len(session.NewSesh.SEEBytes)-1],
+		session.NewSesh.SCBytes[:len(session.NewSesh.SCBytes)-1],
+		session.NewSesh.SCVBytes[:len(session.NewSesh.SCVBytes)-1],
+		session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1])
+	return msgs
+}
+
 func CHFKDerivation() {
 	session.Sekret.CHF = ExpandLabel(session.Sekret.CHS, "finished", []byte{}, 32)
+	// fmt.Println("CLIENT HANDSHAKE FINISHED:", session.Sekret.CHF)
+}
+
+// https://github.com/syncsynchalt/tincan-tls/blob/51a1e468df0935fac156f7e7af6900cfa9cb389f/tls/conncrypt.go#L44
+
+func NewIV(counter uint8, iv []byte) []byte {
+	res := make([]byte, len(iv))
+	copy(res, iv)
+	for i := 0; i < 12; i++ {
+		res[len(res)-i-1] ^= byte(counter >> uint(12*i))
+	}
+	return res
 }
 
 // https://github.com/syncsynchalt/tincan-tls/blob/51a1e468df0935fac156f7e7af6900cfa9cb389f/tls/conncrypt.go#L44
