@@ -39,9 +39,9 @@ func ReadRec2() []byte {
 	fmt.Println("HSCOUNTER RECV")
 	fmt.Println(session.HSCounter.Recv)
 
-	session.Sekret.SHIV = NewIV(session.HSCounter.Recv, session.Sekret.SHIV)
+	iv := NewIV(session.HSCounter.Recv, session.Sekret.SHIV) // TEST
 
-	ret := krypto.Decrypt(session.Sekret.SHK, session.Sekret.SHIV, fin)
+	ret := krypto.Decrypt(session.Sekret.SHK, iv, fin)
 	fmt.Println(help.B2H(ret))
 	session.HSCounter.Recv++
 	return ret
@@ -57,14 +57,14 @@ func ReadRec3() []byte {
 	fin := help.Concat(buf, rest)
 
 	fmt.Println("")
-	fmt.Println("-----------ENCRYPTED RECORD-----------")
+	fmt.Println("----------------------ENCRYPTED RECORD---------------------------")
 	fmt.Println(fin) // could change to HEX if needed help.B2H
 	fmt.Println("")
 	fmt.Println("///////////////////////DECRYPTED RECORD///////////////////////")
 	fmt.Println("")
 
-	session.Sekret.SAIV = NewIV(session.ACounter.Recv, session.Sekret.SAIV)
-	ret := krypto.Decrypt(session.Sekret.SAK, session.Sekret.SAIV, fin)
+	iv := NewIV(session.ACounter.Recv, session.Sekret.SAIV)
+	ret := krypto.Decrypt(session.Sekret.SAK, iv, fin)
 	fmt.Println(help.B2H(ret))
 	session.ACounter.Recv++
 	return ret

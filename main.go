@@ -25,15 +25,13 @@ func main() {
 
 	// Skipping Server Change Cipher Spec 0x20
 
-	session.NewSesh.SEEBytes = server.ReadRec2() // Confirmed Server Encrypted Extensions 	0
+	session.NewSesh.SEEBytes = server.ReadRec2() // Confirmed Server Encrypted Extensions
 
-	session.NewSesh.SCBytes = server.ReadRec2() // Confirmed Server Certificate				1
+	session.NewSesh.SCBytes = server.ReadRec2() // Confirmed Server Certificate
 
-	session.HSCounter.Recv += 1                  // Skipping Server Handshake Finished 2+1=	3
-	session.NewSesh.SCVBytes = server.ReadRec2() // Confirmed Server Cert Verify			4
+	session.NewSesh.SCVBytes = server.ReadRec2() // Confirmed Server Cert Verify
 
-	session.HSCounter.Recv -= 3
-	session.NewSesh.SHSBytes = server.ReadRec2() // Confirmed Server Handshake Finished		1
+	session.NewSesh.SHSBytes = server.ReadRec2() // Confirmed Server Handshake Finished
 
 	// 6. Application Key Derivation
 	krypto.AKDerivation()
