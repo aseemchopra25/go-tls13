@@ -80,14 +80,14 @@ func ReadServerHello() {
 
 func ReadApplicationData() []byte {
 	var resp []byte
-	// for {
-	// 	plain := GetData() // TLS in chunks
-	// 	if string(plain) == string([]byte{48, 13, 10, 13, 10, 23}) {
-	// 		break
-	// 	}
-	// 	resp = append(resp, plain...)
-	// }
-	// fmt.Println(resp)
+	for {
+		plain := ReadRec3() // TLS in chunks
+		if string(plain) == string([]byte{48, 13, 10, 13, 10, 23}) {
+			break
+		}
+		resp = append(resp, plain...)
+	}
+	fmt.Println(resp)
 	return resp
 }
 

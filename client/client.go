@@ -108,6 +108,7 @@ func SendHello(name string) {
 	send(session.NewSesh.CHBytes)
 
 }
+
 func SendChangeCipherSpec() {
 	send([]byte{0x14, 0x03, 0x03, 0x00, 0x01, 0x01})
 }
@@ -118,20 +119,27 @@ func SendHandshakeFinished() {
 	// fmt.Println(session.NewSesh.CHFBytes)
 	// we need to send this along with a Wrapped record so there would be "additional data"
 	// to be encrypted
+	iv := krypto.NewIV(session.HSCounter.Sent, session.Sekret.CHIV)
 	extra := help.Concat([]byte{0x17, 0x03, 0x03, 0x35}) // 0x35 = 53 bytes = (chf:37 (4+32+1) + aead:16)
-	send(krypto.Encrypt(session.Sekret.CHK, session.Sekret.CHIV, session.NewSesh.CHFBytes, extra))
+	res := krypto.Encrypt(session.Sekret.CHK, iv, session.NewSesh.CHFBytes, extra)
+	fmt.Println(res)
+	send(res)
 
 }
 
 func SendApplicationData(data []byte) {
-	session.HSCounter.Sent += 1
 	send(EncryptAppData(data))
 }
 
 func EncryptAppData(data []byte) []byte {
 	data = append(data, 0x17)                                                      // disguise for tls 1.2 application data added at end
 	extra := help.Concat([]byte{0x17, 0x03, 0x03}, help.I2B(uint16(len(data)+16))) // 16 for AEAD tag
-	return krypto.Encrypt(session.Sekret.CAK, session.Sekret.CAIV, data, extra)    // change caiv
+	fmt.Println("")
+	fmt.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4")
+	iv := krypto.NewIV(session.ACounter.Sent, session.Sekret.CAIV)
+	session.ACounter.Sent++
+	fmt.Println(session.Sekret.CAK)
+	return krypto.Encrypt(session.Sekret.CAK, iv, data, extra) // change caiv
 }
 
 func payload() []byte {

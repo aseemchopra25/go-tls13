@@ -1,11 +1,12 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
-	"os"
 
 	"github.com/aseemchopra25/go-toy-tls/client"
 	"github.com/aseemchopra25/go-toy-tls/krypto"
+	"github.com/aseemchopra25/go-toy-tls/network"
 	"github.com/aseemchopra25/go-toy-tls/server"
 	"github.com/aseemchopra25/go-toy-tls/session"
 )
@@ -38,10 +39,6 @@ func main() {
 
 	server.ReadRec3() // Server New Session Ticket (SAIV/SAK)
 
-	// --------------------____________________END____________________---------------
-
-	// server.ReadRec3() NO RESPONSE NOW IT"S TIME TO SEND STUFF
-
 	// 7. Send Client Change Cipher Spec SKIP THIS
 	// client.SendChangeCipherSpec()
 
@@ -52,12 +49,22 @@ func main() {
 	client.SendHandshakeFinished()
 	fmt.Println("SENT CLIENT HANDSHAKE FINISHED!")
 
-	os.Exit(1) // remove this
-
 	// 10. Send Application Data
 	req := fmt.Sprintf("GET / HTTP/1.1\r\nHost: %s\r\n\r\n", "chopraaseem.com")
 	client.SendApplicationData([]byte(req))
 
+	fmt.Println("APP DATA SENT!....Waiting for response")
+
+	buf := make([]byte, 5)
+	network.Conn.Read(buf)
+	fmt.Println(buf)
+	// fmt.Println(buf)
+	l := binary.BigEndian.Uint16(buf[3:])
+	rest := make([]byte, int(l))
+	network.Conn.Read(rest)
+	fmt.Println(rest)
+
+	server.ReadAppData()
 	// 11. Read Application Data
 	server.ReadApplicationData() // session ticket ignore/test
 }

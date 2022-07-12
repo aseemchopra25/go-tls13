@@ -176,6 +176,8 @@ func CHFKDerivation() {
 	// fmt.Println("CLIENT HANDSHAKE FINISHED:", session.Sekret.CHF)
 }
 
+// https://github.com/syncsynchalt/tincan-tls/blob/51a1e468df0935fac156f7e7af6900cfa9cb389f/tls/conncrypt.go#L44
+
 func NewIV(counter uint8, iv []byte) []byte {
 	res := make([]byte, len(iv))
 	copy(res, iv)
