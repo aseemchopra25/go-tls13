@@ -39,7 +39,7 @@ func ReadRec2() []byte {
 	fmt.Println("HSCOUNTER RECV")
 	fmt.Println(session.HSCounter.Recv)
 
-	iv := NewIV(session.HSCounter.Recv, session.Sekret.SHIV) // TEST
+	iv := krypto.NewIV(session.HSCounter.Recv, session.Sekret.SHIV) // TEST
 
 	ret := krypto.Decrypt(session.Sekret.SHK, iv, fin)
 	fmt.Println(help.B2H(ret))
@@ -63,23 +63,12 @@ func ReadRec3() []byte {
 	fmt.Println("///////////////////////DECRYPTED RECORD///////////////////////")
 	fmt.Println("")
 
-	iv := NewIV(session.ACounter.Recv, session.Sekret.SAIV)
+	iv := krypto.NewIV(session.ACounter.Recv, session.Sekret.SAIV)
 	ret := krypto.Decrypt(session.Sekret.SAK, iv, fin)
 	fmt.Println(help.B2H(ret))
 	session.ACounter.Recv++
 	return ret
 
-}
-
-// Generation of new IV
-
-func NewIV(counter uint8, iv []byte) []byte {
-	res := make([]byte, len(iv))
-	copy(res, iv)
-	for i := 0; i < 12; i++ {
-		res[len(res)-i-1] ^= byte(counter >> uint(12*i))
-	}
-	return res
 }
 
 func ReadServerHello() {

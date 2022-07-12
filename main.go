@@ -42,16 +42,17 @@ func main() {
 
 	// server.ReadRec3() NO RESPONSE NOW IT"S TIME TO SEND STUFF
 
-	os.Exit(1) // remove this
-
-	// 7. Send Client Change Cipher Spec
-	client.SendChangeCipherSpec()
+	// 7. Send Client Change Cipher Spec SKIP THIS
+	// client.SendChangeCipherSpec()
 
 	// 8. Client Handshake Finished Key Derivation
 	krypto.CHFKDerivation()
 
 	// 9. Send Client Handshake Finished Message
 	client.SendHandshakeFinished()
+	fmt.Println("SENT CLIENT HANDSHAKE FINISHED!")
+
+	os.Exit(1) // remove this
 
 	// 10. Send Application Data
 	req := fmt.Sprintf("GET / HTTP/1.1\r\nHost: %s\r\n\r\n", "chopraaseem.com")

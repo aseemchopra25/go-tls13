@@ -120,6 +120,7 @@ func SendHandshakeFinished() {
 	// to be encrypted
 	extra := help.Concat([]byte{0x17, 0x03, 0x03, 0x35}) // 0x35 = 53 bytes = (chf:37 (4+32+1) + aead:16)
 	send(krypto.Encrypt(session.Sekret.CHK, session.Sekret.CHIV, session.NewSesh.CHFBytes, extra))
+
 }
 
 func SendApplicationData(data []byte) {
@@ -135,7 +136,8 @@ func EncryptAppData(data []byte) []byte {
 
 func payload() []byte {
 	// Client Handshake Finished
-	fhash := sha256.Sum256(help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:], session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1]))
+	// fhash := sha256.Sum256(help.Concat(session.NewSesh.CHBytes[5:], session.NewSesh.SHBytes[5:], session.NewSesh.SHSBytes[:len(session.NewSesh.SHSBytes)-1]))
+	fhash := sha256.Sum256(krypto.HHash())
 	hm := hmac.New(sha256.New, session.Sekret.CHF)
 	hm.Write(fhash[:])
 	// fmt.Println(hm.Sum(nil)) // remove this
