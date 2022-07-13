@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/aseemchopra25/go-toy-tls/client"
 	"github.com/aseemchopra25/go-toy-tls/krypto"
@@ -13,6 +15,9 @@ import (
 )
 
 func main() {
+	// 0. Starting Execution Timer:
+	start := time.Now()
+
 	// 1. Create KeyPair for X25519 A-OK
 	krypto.GenerateKeyPair()
 
@@ -65,5 +70,9 @@ func main() {
 	x := server.ReadAppData()
 	reader, _ := gzip.NewReader(bytes.NewReader(x))
 	_, _ = io.Copy(os.Stdout, reader)
+
+	// Time of Execution
+	fmt.Println("")
+	fmt.Println(time.Since(start))
 
 }
