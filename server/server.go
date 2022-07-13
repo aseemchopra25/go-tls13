@@ -3,8 +3,6 @@ package server
 import (
 	"encoding/binary"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/aseemchopra25/go-toy-tls/help"
 	"github.com/aseemchopra25/go-toy-tls/krypto"
@@ -111,15 +109,7 @@ func ReadAppData() []byte {
 	fmt.Println("----------------------PRINTING FINAL RESPONSES-------------------------------")
 	iv := krypto.NewIV(session.ACounter.Recv, session.Sekret.SAIV)
 	decrypt := krypto.Decrypt(session.Sekret.SAK, iv, fin) // maybe this is cert
-	session.HSCounter.Recv += 1
+	session.ACounter.Recv += 1
 	fmt.Println(string(decrypt))
 	return decrypt
-}
-
-func Legible(b []byte) string {
-	s := make([]string, len(b))
-	for i := range b {
-		s[i] = strconv.Itoa(int(b[i]))
-	}
-	return strings.Join(s, ",")
 }
