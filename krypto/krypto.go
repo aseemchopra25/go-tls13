@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
+	"fmt"
 	"log"
 
 	"github.com/aseemchopra25/go-toy-tls/help"
@@ -35,6 +36,26 @@ func GenerateKeyPair() {
 // server_handshake_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
 
 // THIS IS FULLY FUNCTIONAL
+func PrintHSKeys() {
+	fmt.Println("HS", session.Sekret.HS, " ")
+	fmt.Println("CHS", session.Sekret.CHS, " ")
+	fmt.Println("SHS", session.Sekret.SHS, " ")
+	fmt.Println("CHK", session.Sekret.CHK, " ")
+	fmt.Println("CHIV", session.Sekret.CHIV, " ")
+	fmt.Println("SHK", session.Sekret.SHK, " ")
+	fmt.Println("SHIV", session.Sekret.SHIV, " ")
+}
+
+func PrintAKeys() {
+	fmt.Println("CAK: ", session.Sekret.CAK, " ")
+	fmt.Println("CAIV: ", session.Sekret.CAIV, " ")
+	fmt.Println("SAK: ", session.Sekret.SAK, " ")
+	fmt.Println("SAIV:", session.Sekret.SAIV, " ")
+}
+
+func PrintCFK() {
+	fmt.Println("CFK", session.Sekret.CHF, "")
+}
 func HSKDerivation() {
 	session.Sekret.SS, _ = curve25519.X25519(session.NewKeyPair.PrivateKey, session.NewServerHello.Pubkey)
 
@@ -139,7 +160,7 @@ func Encrypt(key, iv, plain, extra []byte) []byte {
 // client_application_iv = HKDF-Expand-Label(key: client_secret, label: "iv", ctx: "", len: 12)
 // server_application_iv = HKDF-Expand-Label(key: server_secret, label: "iv", ctx: "", len: 12)
 
-// PROBLEM
+// CONFIRMED WORKING
 func AKDerivation() {
 	msgs := HHash()
 	zeros := make([]byte, 32)
@@ -173,6 +194,11 @@ func HHash() []byte {
 
 func CHFKDerivation() {
 	session.Sekret.CHF = ExpandLabel(session.Sekret.CHS, "finished", []byte{}, 32)
+	// fmt.Println("CLIENT HANDSHAKE FINISHED:", session.Sekret.CHF)
+}
+
+func SHFKDerivation() {
+	session.Sekret.SHF = ExpandLabel(session.Sekret.SHS, "finished", []byte{}, 32)
 	// fmt.Println("CLIENT HANDSHAKE FINISHED:", session.Sekret.CHF)
 }
 
