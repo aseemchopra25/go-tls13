@@ -9,7 +9,7 @@ import (
 var Conn io.ReadWriteCloser
 
 func Connect() net.Conn {
-	conn, err := net.Dial("tcp", "www.chopraaseem.com:443")
+	conn, err := net.Dial("tcp", "vouch.io:443")
 	if err != nil {
 		log.Fatal(err)
 	}

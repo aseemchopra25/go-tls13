@@ -35,6 +35,7 @@ type Secret struct {
 
 	// Finished
 	CHF []byte
+	SHF []byte
 }
 
 var Sekret = Secret{}
@@ -47,6 +48,7 @@ type Session struct {
 	SEEBytes []byte
 	SCBytes  []byte
 	SCVBytes []byte
+	SCCBytes []byte
 	// SHFBytes  []byte
 
 }
