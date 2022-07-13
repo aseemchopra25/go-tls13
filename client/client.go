@@ -138,8 +138,6 @@ func EncryptAppData(data []byte) []byte {
 	extra := help.Concat([]byte{0x17, 0x03, 0x03}, help.I2B(uint16(len(data)+16))) // 16 for AEAD tag
 
 	// remove this block
-	fmt.Println("")
-	fmt.Println("Encrypting Application Data...")
 
 	iv := krypto.NewIV(session.ACounter.Sent, session.Sekret.CAIV)
 	session.ACounter.Sent++
