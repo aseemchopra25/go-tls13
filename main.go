@@ -58,7 +58,8 @@ func main() {
 	krypto.AKDerivation()
 
 	// 10. Send Application Data
-	req := fmt.Sprintf("GET / HTTP/1.1\r\nHost: %s\r\n\r\n", "https://vouch.io/")
+	// req := fmt.Sprintf("GET / HTTP/1.1\r\nHost: %s\r\n\r\n", "vouch.io/")
+	req := "GET / HTTP/1.1\r\nHost: vouch.io\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)\r\n Chrome/92.0.4515.159 Safari/537.36\r\nAccept-Encoding: gzip, deflate\r\nAccept-Language: en-GB,en-US;q=0.9,en;q=0.8\r\nConnection: close\r\n\r\n"
 	client.SendApplicationData([]byte(req))
 	fmt.Printf("\nAPPLICATION DATA SENT!\n")
 	fmt.Printf("\nREADING SESSION TICKET\n")
